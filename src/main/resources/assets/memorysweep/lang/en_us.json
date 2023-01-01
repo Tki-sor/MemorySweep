@@ -1,4 +1,4 @@
 {
-  "memorysweep.gc.start": "start",
-  "memorysweep.gc.end": "end"
+  "memorysweep.gc.start": "[MemorySweep]Sweepings...",
+  "memorysweep.gc.end": "[MemorySweep]Done."
 }

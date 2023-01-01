@@ -2,15 +2,17 @@ package com.tkisor.memorysweep;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import com.mojang.logging.LogUtils;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 
 @Mod.EventBusSubscriber
@@ -23,9 +25,20 @@ public class MemoryCleaner {
         CommandDispatcher<CommandSourceStack> command = event.getDispatcher();
         command.register(Commands.literal("memorysweep").executes(
                 (CommandContext<CommandSourceStack> memorysweep) -> {
-                    Entity entity = memorysweep.getSource().getEntity();
-
-                    new CleanerThread(entity).run();
+                    new Thread(() -> {
+                        memorysweep.getSource().sendSuccess(new TranslatableComponent(
+                                MemorySweep.MODID + ".gc.start"),false);
+                        LogUtils.getLogger().info("Memory Sweep start.");
+                        System.gc();
+                        try {
+                            Thread.sleep(1200L);
+                        } catch (InterruptedException ignored) {
+                        }
+                        System.gc();
+                        memorysweep.getSource().sendSuccess(new TranslatableComponent(
+                                MemorySweep.MODID + ".gc.end"),false);
+                        LogUtils.getLogger().info("Memory Sweep end.");
+                    }).run();
                     return 0;
                 })
         );
@@ -34,13 +47,26 @@ public class MemoryCleaner {
     @SubscribeEvent
     public static void serverTickEvent(TickEvent.ServerTickEvent event) {
         if (Config.MEMORY_SWEEP_TIME.get() > 0) {
+            if(cleanTime == 0) {
+                cleanTime = System.currentTimeMillis();
+            }
             if ((System.currentTimeMillis() - cleanTime) > (long) Config.MEMORY_SWEEP_TIME.get() * 60 * 1000) {
                 cleanTime = System.currentTimeMillis();
-                LocalPlayer player = Minecraft.getInstance().player;
-                if (player != null) {
-                    new CleanerThread(player).run();
+                    new Thread(() -> {
+                        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslatableComponent(
+                                MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
+                        LogUtils.getLogger().info("Memory Sweep start.");
+                        System.gc();
+                        try {
+                            Thread.sleep(1200L);
+                        } catch (InterruptedException ignored) {
+                        }
+                        System.gc();
+                        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslatableComponent(
+                                MemorySweep.MODID + ".gc.end"), ChatType.SYSTEM, Util.NIL_UUID);
+                        LogUtils.getLogger().info("Memory Sweep end.");
+                    }).run();
                 }
-            }
         }
     }
 }

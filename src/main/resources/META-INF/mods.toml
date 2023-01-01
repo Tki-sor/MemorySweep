@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[40,)"
+license="All rights reserved"
+[[mods]]
+modId="memorysweep"
+version="1.18.2-0.2"
+displayName="MemorySweep"
+logoFile="memorysweep.png"
+credits=""
+authors="Tki_sor"
+description='''
+This is a mod for memory cleaner.
+'''
+[[dependencies.memorysweep]]
+    modId="forge"
+    mandatory=true
+    versionRange="[40,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.memorysweep]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.2,1.19)"
+    ordering="NONE"
+    side="BOTH"

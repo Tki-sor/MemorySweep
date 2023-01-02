@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 public class MemorySweep {
     public static final String MODID = "memorysweep";
     public static final Logger LOGGER = LogUtils.getLogger();
+
     @SubscribeEvent
     public void onCommonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("Clear Sweep Mod Loaded Successfully.");

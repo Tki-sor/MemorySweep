@@ -14,12 +14,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-
 @Mod.EventBusSubscriber
 public class MemoryCleaner {
 
     public static long cleanTime = 0;
     public static long usageTime = 0;
+    public static boolean canClean = false;
 
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
@@ -36,7 +36,7 @@ public class MemoryCleaner {
                 System.gc();
                 memorysweep.getSource().sendSuccess(new TranslatableComponent(MemorySweep.MODID + ".gc.end"), false);
                 LogUtils.getLogger().info("Memory Sweep end.");
-            }).run();
+            }).start();
             return 0;
         }));
     }
@@ -47,21 +47,25 @@ public class MemoryCleaner {
             if (cleanTime == 0) {
                 cleanTime = System.currentTimeMillis();
             }
-            if ((System.currentTimeMillis() - cleanTime) > (long) Config.MEMORY_SWEEP_TIME.get() * 60 * 1000) {
-                cleanTime = System.currentTimeMillis();
-                new Thread(MemoryCleaner::memorycleaner).run();
+            if((System.currentTimeMillis() - cleanTime) > (long) Config.MEMORY_SWEEP_TIME.get() * 60 * 1000) {
+                canClean = true;
             }
         }
 
         if (!(Config.MEMORY_USAGE.get() == 100 || Config.MEMORY_USAGE.get() == 0)) {
             Runtime runtime = Runtime.getRuntime();
-            if ((System.currentTimeMillis() - usageTime) / 1000 > 120) {
+            if ((System.currentTimeMillis() - usageTime) > (long) 2 * 60 * 1000) {
                 double memoryusage = (double) (runtime.totalMemory() - runtime.freeMemory()) / runtime.totalMemory();
-                if (memoryusage > (double) Config.MEMORY_USAGE.get() / 100 && usageTime > 20 * 20 * 60) {
-                    new Thread(MemoryCleaner::memorycleaner).run();
-                    usageTime = System.currentTimeMillis();
+                if (memoryusage > (double) Config.MEMORY_USAGE.get() / 100) {
+                    canClean = true;
                 }
             }
+        }
+
+        if (canClean) {
+            new Thread(MemoryCleaner::memorycleaner).start();
+            usageTime = System.currentTimeMillis();
+            cleanTime = System.currentTimeMillis();
         }
     }
 

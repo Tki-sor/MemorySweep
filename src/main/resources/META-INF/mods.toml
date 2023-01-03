@@ -1,13 +1,14 @@
 modLoader="javafml"
 loaderVersion="[40,)"
 license="All rights reserved"
+issueTrackerURL="https://github.com/Tki-sor/MemorySweep/issues"
 [[mods]]
 modId="memorysweep"
-version="1.18.2-0.5"
+version="1.18.2-0.6"
 displayName="MemorySweep"
 logoFile="memorysweep.png"
-credits=""
 authors="Tki_sor"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/memorysweep"
 description='''
 This is a mod for memory cleaner.
 '''

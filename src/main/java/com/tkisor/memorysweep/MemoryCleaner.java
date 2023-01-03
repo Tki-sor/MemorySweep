@@ -66,6 +66,7 @@ public class MemoryCleaner {
             new Thread(MemoryCleaner::memorycleaner).start();
             usageTime = System.currentTimeMillis();
             cleanTime = System.currentTimeMillis();
+            canClean = false;
         }
     }
 

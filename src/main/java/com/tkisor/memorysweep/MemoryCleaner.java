@@ -3,11 +3,9 @@ package com.tkisor.memorysweep;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,7 +24,7 @@ public class MemoryCleaner {
         CommandDispatcher<CommandSourceStack> command = event.getDispatcher();
         command.register(Commands.literal("memorysweep").executes((CommandContext<CommandSourceStack> memorysweep) -> {
             new Thread(() -> {
-                memorysweep.getSource().sendSuccess(new TranslatableComponent(MemorySweep.MODID + ".gc.start"), false);
+                memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.start"), false);
                 LogUtils.getLogger().info("Memory Sweep start.");
                 System.gc();
                 try {
@@ -34,7 +32,7 @@ public class MemoryCleaner {
                 } catch (InterruptedException ignored) {
                 }
                 System.gc();
-                memorysweep.getSource().sendSuccess(new TranslatableComponent(MemorySweep.MODID + ".gc.end"), false);
+                memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.end"), false);
                 LogUtils.getLogger().info("Memory Sweep end.");
             }).start();
             return 0;
@@ -71,7 +69,7 @@ public class MemoryCleaner {
     }
 
     private static void memorycleaner() {
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslatableComponent(MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.start"), true);
         LogUtils.getLogger().info("Memory Sweep start.");
         System.gc();
         try {
@@ -79,7 +77,7 @@ public class MemoryCleaner {
         } catch (InterruptedException ignored) {
         }
         System.gc();
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslatableComponent(MemorySweep.MODID + ".gc.end"), ChatType.SYSTEM, Util.NIL_UUID);
+        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.end"), true);
         LogUtils.getLogger().info("Memory Sweep end.");
     }
 }

@@ -24,7 +24,9 @@ public class MemoryCleaner {
         CommandDispatcher<CommandSourceStack> command = event.getDispatcher();
         command.register(Commands.literal("memorysweep").executes((CommandContext<CommandSourceStack> memorysweep) -> {
             new Thread(() -> {
-                memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.start"), false);
+                if (Config.COMMAND_TEST.get()) {
+                    memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.start"), false);
+                }
                 LogUtils.getLogger().info("Memory Sweep start.");
                 System.gc();
                 try {
@@ -32,7 +34,9 @@ public class MemoryCleaner {
                 } catch (InterruptedException ignored) {
                 }
                 System.gc();
-                memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.end"), false);
+                if (Config.COMMAND_TEST.get()) {
+                    memorysweep.getSource().sendSuccess(Component.translatable(MemorySweep.MODID + ".gc.end"), false);
+                }
                 LogUtils.getLogger().info("Memory Sweep end.");
             }).start();
             return 0;
@@ -69,7 +73,9 @@ public class MemoryCleaner {
     }
 
     private static void memorycleaner() {
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.start"), true);
+        if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
+            ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.start"), true);
+        }
         LogUtils.getLogger().info("Memory Sweep start.");
         System.gc();
         try {
@@ -77,7 +83,9 @@ public class MemoryCleaner {
         } catch (InterruptedException ignored) {
         }
         System.gc();
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.end"), true);
+        if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
+            ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.end"), true);
+        }
         LogUtils.getLogger().info("Memory Sweep end.");
     }
 }

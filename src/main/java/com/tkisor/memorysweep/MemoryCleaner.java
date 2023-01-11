@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.test.TestLogger;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -25,14 +26,18 @@ public class MemoryCleaner {
         CommandDispatcher<CommandSource> command = event.getDispatcher();
         command.register(Commands.literal("memorysweep").executes((CommandContext<CommandSource> memorysweep) -> {
             new Thread(() -> {
-                memorysweep.getSource().sendSuccess(new TranslationTextComponent(MemorySweep.MODID + ".gc.start"), false);
+                if (Config.COMMAND_TEST.get()) {
+                    memorysweep.getSource().sendSuccess(new TranslationTextComponent(MemorySweep.MODID + ".gc.start"), false);
+                }
                 System.gc();
                 try {
                     Thread.sleep(1200L);
                 } catch (InterruptedException ignored) {
                 }
                 System.gc();
-                memorysweep.getSource().sendSuccess(new TranslationTextComponent(MemorySweep.MODID + ".gc.end"), false);
+                if (Config.COMMAND_TEST.get()) {
+                    memorysweep.getSource().sendSuccess(new TranslationTextComponent(MemorySweep.MODID + ".gc.end"), false);
+                }
             }).start();
             return 0;
         }));
@@ -44,7 +49,7 @@ public class MemoryCleaner {
             if (cleanTime == 0) {
                 cleanTime = System.currentTimeMillis();
             }
-            if((System.currentTimeMillis() - cleanTime) > (long) Config.MEMORY_SWEEP_TIME.get() * 60 * 1000) {
+            if ((System.currentTimeMillis() - cleanTime) > (long) Config.MEMORY_SWEEP_TIME.get() * 60 * 1000) {
                 canClean = true;
             }
         }
@@ -68,13 +73,17 @@ public class MemoryCleaner {
     }
 
     private static void memorycleaner() {
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslationTextComponent(MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
+        if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
+            ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslationTextComponent(MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
+        }
         System.gc();
         try {
             Thread.sleep(1200L);
         } catch (InterruptedException ignored) {
         }
         System.gc();
-        ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslationTextComponent(MemorySweep.MODID + ".gc.end"), ChatType.SYSTEM, Util.NIL_UUID);
+        if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
+            ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslationTextComponent(MemorySweep.MODID + ".gc.end"), ChatType.SYSTEM, Util.NIL_UUID);
+        }
     }
 }

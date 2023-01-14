@@ -1,0 +1,4 @@
+{
+    "memorysweep.gc.start": "[MemorySweep]Fazendo Varredura...",
+    "memorysweep.gc.end": "[MemorySweep]Concluído."
+}

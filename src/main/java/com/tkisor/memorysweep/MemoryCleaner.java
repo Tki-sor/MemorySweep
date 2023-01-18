@@ -16,7 +16,6 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 @Mod.EventBusSubscriber
 public class MemoryCleaner {
-
     public static long cleanTime = 0;
     public static long usageTime = 0;
     public static boolean canClean = false;
@@ -58,7 +57,7 @@ public class MemoryCleaner {
 
         if (!(Config.MEMORY_USAGE.get() == 100 || Config.MEMORY_USAGE.get() == 0)) {
             Runtime runtime = Runtime.getRuntime();
-            if ((System.currentTimeMillis() - usageTime) > (long) 2 * 60 * 1000) {
+            if ((System.currentTimeMillis() - usageTime) > (long) Config.MEMORY_USAGE_TIME.get() * 60 * 1000) {
                 double memoryusage = (double) (runtime.totalMemory() - runtime.freeMemory()) / runtime.totalMemory();
                 if (memoryusage > (double) Config.MEMORY_USAGE.get() / 100) {
                     canClean = true;
@@ -74,7 +73,7 @@ public class MemoryCleaner {
         }
     }
 
-    private static void memorycleaner() {
+    public static void memorycleaner() {
         if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
             ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslatableComponent(MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
         }

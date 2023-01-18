@@ -72,7 +72,7 @@ public class MemoryCleaner {
         }
     }
 
-    private static void memorycleaner() {
+    public static void memorycleaner() {
         if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
             ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(Component.translatable(MemorySweep.MODID + ".gc.start"), true);
         }

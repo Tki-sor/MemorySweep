@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.test.TestLogger;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -56,7 +55,7 @@ public class MemoryCleaner {
 
         if (!(Config.MEMORY_USAGE.get() == 100 || Config.MEMORY_USAGE.get() == 0)) {
             Runtime runtime = Runtime.getRuntime();
-            if ((System.currentTimeMillis() - usageTime) > (long) 2 * 60 * 1000) {
+            if ((System.currentTimeMillis() - usageTime) > (long) Config.MEMORY_USAGE_TIME.get() * 60 * 1000) {
                 double memoryusage = (double) (runtime.totalMemory() - runtime.freeMemory()) / runtime.totalMemory();
                 if (memoryusage > (double) Config.MEMORY_USAGE.get() / 100) {
                     canClean = true;
@@ -72,7 +71,7 @@ public class MemoryCleaner {
         }
     }
 
-    private static void memorycleaner() {
+    public static void memorycleaner() {
         if (Config.AUTOMATIC_MEMORY_CLEANER_TEST.get()) {
             ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastMessage(new TranslationTextComponent(MemorySweep.MODID + ".gc.start"), ChatType.SYSTEM, Util.NIL_UUID);
         }

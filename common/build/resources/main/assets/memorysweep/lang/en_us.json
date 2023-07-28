@@ -1,0 +1,8 @@
+{
+  "memorysweep.gc.start": "[Memory Sweep]Start memory cleanup, currently system occupying %sG memory.",
+  "memorysweep.gc.end": "[Memory Sweep]Memory cleanup completed, currently system occupying %sG memory.",
+  "memorysweep.gc.failed": "[Memory Sweep]Memory cleanup failed, because %s",
+  "memorysweep.gc.failed.cause.not-gc": "There is no need to clean up memory.",
+  "memorysweep.gc.failed.cause.is-zgc": "ZGC is enabled.",
+  "memorysweep.gc.failed.cause.not-enabled": "Memory Sweep is not enabled."
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "memorysweep",
+  "version": "${version}",
+
+  "name": "MemorySweep",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "MIT",
+  "icon": "icon.png",
+
+  "environment": "*",
+  "entrypoints": {},
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": ">=1.20.1"
+  }
+}

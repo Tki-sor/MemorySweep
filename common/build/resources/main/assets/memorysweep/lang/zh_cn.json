@@ -1,8 +1,0 @@
-{
-  "memorysweep.gc.start": "[内存清扫]正在清理内存，当前系统占用%sG内存",
-  "memorysweep.gc.end": "[内存清扫]内存已清理完成，当前系统占用%sG内存",
-  "memorysweep.gc.failed": "[内存清扫]内存清理失败，因为%s",
-  "memorysweep.gc.failed.cause.not-gc": "不需要清理内存",
-  "memorysweep.gc.failed.cause.is-zgc": "当前使用的是ZGC",
-  "memorysweep.gc.failed.cause.not-enabled": "未开启内存清扫"
-}

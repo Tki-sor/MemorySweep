@@ -28,7 +28,7 @@ The release version is passed as `-Pmod_version=...` to Gradle and validated in 
 
 ## Artifacts and checks
 
-CI fixes **Java 21 + Gradle 9.1.0** through the Gradle setup action rather than the existing 8.12.1 wrapper. The latter hit a Java 25 dependency-bytecode error in this workspace. The workflow still validates the wrapper JAR, but its build command uses the pinned Gradle executable.
+CI fixes **Java 21.0.10 + Gradle 9.1.0** through the Gradle setup action rather than the existing 8.12.1 wrapper. The latter hit a Java 25 dependency-bytecode error in this workspace. The workflow still validates the wrapper JAR, but its build command uses the pinned Gradle executable.
 
 It runs `gradle --project-dir universal clean build`, not the root multi-loader `build`. The standalone module reads its version/group/archive defaults from the parent properties file and does not configure the legacy Minecraft/Loom modules or their tracked caches. The archive gate checks:
 
@@ -39,7 +39,7 @@ It runs `gradle --project-dir universal clean build`, not the root multi-loader 
 
 The downloadable `MemorySweep-Universal-<version>` artifact includes the JAR, `SHA256SUMS`, `release.json` and generated release notes. The publishing job downloads that same JAR rather than rebuilding. Its API token is passed only to the token guard, read-only platform-tag preflight and upload action, not the build/PR jobs. All jobs have read-only GitHub contents permission. Publication is serialized and not cancelled mid-upload. The upload action performs one attempt; do not blindly rerun a failed publishing job after an ambiguous response—first inspect CurseForge for a file that may already have been received.
 
-These are build/package checks, **not Minecraft runtime tests**. A changed source or version-stamped archive has a different SHA-256 and is not automatically covered by the historical runtime matrices. See [native configuration tests and limitations](NATIVE-CONFIG.md).
+These are build/package checks, **not Minecraft runtime tests**. The first hosted runner's floating Java 21 selected 21.0.12 and changed synthetic lambda/accessor names in five classes. CI therefore pins 21.0.10 and additionally refuses to upload version `3.0.0` unless its full JAR SHA-256 equals the runtime-tested `0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b`. Other changed or version-stamped archives are not automatically covered by the historical runtime matrices. See [native configuration tests and limitations](NATIVE-CONFIG.md).
 
 ## CurseForge tags
 

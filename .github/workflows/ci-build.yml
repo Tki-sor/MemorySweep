@@ -74,7 +74,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '21.0.10'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -138,6 +138,15 @@ jobs:
           BUILD_VERSION: ${{ needs.analyze.outputs.version }}
           EXPECTED_SHA256: ${{ needs.build.outputs.sha256 }}
         run: python scripts/ci-release.py verify --version "$BUILD_VERSION" --sha256 "$EXPECTED_SHA256"
+      - name: Require the exact runtime-tested 3.0.0 archive
+        env:
+          BUILD_VERSION: ${{ needs.analyze.outputs.version }}
+          BUILD_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          if [ "$BUILD_VERSION" = '3.0.0' ] && [ "$BUILD_SHA256" != '0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b' ]; then
+            echo '::error::3.0.0 does not match the runtime-tested candidate; do not upload an unverified rebuild.'
+            exit 1
+          fi
       - name: Require the project's CurseForge API token
         env:
           CF_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}

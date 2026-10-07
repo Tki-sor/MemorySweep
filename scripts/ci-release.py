@@ -9,6 +9,7 @@ import struct
 import subprocess
 import sys
 import tomllib
+import uuid
 import zipfile
 
 
@@ -75,8 +76,14 @@ def emit_outputs(values):
     if output_path:
         with open(output_path, "a", encoding="utf-8") as output:
             for name, value in values.items():
-                require("\n" not in str(value) and "\r" not in str(value), "Unsafe workflow output")
-                output.write(f"{name}={value}\n")
+                value = str(value)
+                require("\r" not in value, "Unsafe workflow output")
+                if "\n" in value:
+                    require(name in {"loaders", "game_versions"}, "Unexpected multiline workflow output")
+                    delimiter = f"MS_OUTPUT_{uuid.uuid4().hex}"
+                    output.write(f"{name}<<{delimiter}\n{value}\n{delimiter}\n")
+                else:
+                    output.write(f"{name}={value}\n")
     print(json.dumps(values, indent=2))
 
 
@@ -92,7 +99,7 @@ def metadata():
         match.group(1), git_output("rev-parse", "--short=12", "HEAD"),
     )
     config = release_config()
-    values.update(loaders=";".join(config["loaders"]), game_versions=";".join(config["game_versions"]))
+    values.update(loaders="\n".join(config["loaders"]), game_versions="\n".join(config["game_versions"]))
     emit_outputs(values)
 
 

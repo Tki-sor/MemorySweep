@@ -14,7 +14,7 @@ The universal HUD memory bar is not implemented. Gameplay, notifications and lon
 
 ## Build
 
-Use **JDK 21 and Gradle 9.1.0**:
+Use **JDK 21.0.10 and Gradle 9.1.0**:
 
 ```text
 gradle --project-dir universal clean build -Pmod_version=3.0.0

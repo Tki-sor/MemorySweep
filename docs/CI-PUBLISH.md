@@ -8,7 +8,7 @@ The [GitHub Actions workflow](../.github/workflows/ci-build.yml) follows NekoJS-
 2. In **Settings → Secrets and variables → Actions → New repository secret**, create `CURSEFORGE_TOKEN` using a CurseForge author API token belonging to an account authorized to upload files to project **784959**. Obtain it from the CurseForge author console's API-token section. Do not use a public API key, a Minecraft login credential or a token copied from another repository, and do not put the token in a file or chat.
 3. Enable GitHub Actions. The workflow accepts publication only on this repository's `1.20.1`, `main` or `master`, never PRs, forks or arbitrary branches. Ordinary builds do not need a token.
 
-The original local workspace has no `.git` directory. An isolated clone of the remote `1.20.1` branch is used to review and submit the explicitly authorized release changes without replacing unrelated files. The user has configured `CURSEFORGE_TOKEN`; only its presence was checked, never its value. The CI/upload status will be recorded after the remote run.
+The original local workspace has no `.git` directory. An isolated clone of the remote `1.20.1` branch is used to review and submit the explicitly authorized release changes without replacing unrelated files. The user has configured `CURSEFORGE_TOKEN`; only its presence was checked, never its value. The verified remote publication is recorded below.
 
 ## Triggers
 
@@ -48,6 +48,16 @@ The checked-in [release configuration](../scripts/curseforge-release.json) uses 
 CurseForge stores file-level sets of loaders and game versions, not a loader-by-version test matrix. The tags therefore cannot assert that every tagged pair was tested; NeoForge is not available for the oldest versions. Generated public release notes explicitly retain this qualification, old NeoForge's missing UI, Java 8 G1-conditioned evidence, the missing universal HUD and the observed unconfirmed Forge 1.20.1 interval-save issue. Expand tags only after new-artifact tests. A [read-only preflight](../scripts/curseforge-preflight.py) authenticates to the official CurseForge catalog and requires all six exact Minecraft labels and all three loader labels before invoking the upload action. This gate is necessary because the uploader can otherwise filter unknown labels silently. It records only public tag IDs, never the token. Missing tags fail before any upload rather than attaching a different version.
 
 Successful workflow upload does not mean CurseForge has approved or exposed the file. The last step records the returned CurseForge file ID and URL; review the author's project file/status page afterward.
+
+## Verified remote publication (2026-10-07)
+
+- **3.0.0 beta**, exactly one universal JAR, uploaded to project **784959** as [file 9089782](https://www.curseforge.com/minecraft/mc-mods/memorysweep/files/9089782).
+- [Release run 37641005019](https://github.com/Tki-sor/MemorySweep/actions/runs/37641005019) completed successfully on `1.20.1`, source commit `e2162af1cc21b0346c187614c39bbd8d2f2e9245`; metadata, build and publishing jobs all passed.
+- Both the downloaded CI artifact and a fresh [official CDN download](https://edge.forgecdn.net/files/9089/782/memorysweep-universal-3.0.0.jar) matched the full runtime-tested SHA-256 `0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b`.
+- The official catalog recognized all requested game/loader labels. Publisher lists now use newline-separated GitHub multi-line outputs; semicolon lists had resolved to an empty version set and were rejected before upload.
+- Earlier failed runs stopped before any upload request: one at publisher argument validation and one at the strict fingerprint gate. No duplicate beta was uploaded.
+- The file is downloadable from the official CDN. Its public HTML page returned a 403 challenge, so the moderation/approval flag and file-level tag metadata were **not independently read**. Upload success is not an approval claim.
+- Existing legacy loader sources, license, wrapper and already-tracked caches were unchanged. Secret values were not retrieved or logged by the agent.
 
 ## Local verification result
 

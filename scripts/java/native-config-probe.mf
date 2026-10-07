@@ -1,0 +1,2 @@
+Premain-Class: com.tkisor.memorysweep.testing.NativeConfigUiProbe
+

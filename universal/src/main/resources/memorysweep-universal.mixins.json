@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.tkisor.memorysweep.universal.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.8",
+  "client": [
+    "UniversalClientMixin"
+  ],
+  "mixins": [
+    "UniversalServerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

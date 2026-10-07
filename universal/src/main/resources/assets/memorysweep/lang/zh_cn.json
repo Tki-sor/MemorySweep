@@ -1,0 +1,9 @@
+{
+  "memorysweep.config.title": "MemorySweep 设置",
+  "memorysweep.config.memory_sweep": "启用内存清理",
+  "memorysweep.config.memory_sweep.tooltip": "启用定期 JVM 内存清理。",
+  "memorysweep.config.sweep_interval_seconds": "清理间隔（秒）",
+  "memorysweep.config.sweep_interval_seconds.tooltip": "两次清理之间的秒数。设为零可关闭定期清理。",
+  "memorysweep.config.silent": "静默模式",
+  "memorysweep.config.silent.tooltip": "不显示内存清理通知。"
+}

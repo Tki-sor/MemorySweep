@@ -1,0 +1,173 @@
+name: MemorySweep CI Build
+
+on:
+  push:
+    branches: ['1.20.1', main, master]
+  pull_request:
+    branches: ['1.20.1', main, master]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload the universal JAR to CurseForge
+        type: boolean
+        required: true
+        default: false
+      version:
+        description: Mod version (empty uses gradle.properties)
+        type: string
+        required: false
+      channel:
+        description: CurseForge release channel
+        type: choice
+        required: true
+        default: beta
+        options: [alpha, beta, release]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    name: Analyze release metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      publish: ${{ steps.meta.outputs.publish }}
+      version: ${{ steps.meta.outputs.version }}
+      channel: ${{ steps.meta.outputs.channel }}
+      loaders: ${{ steps.meta.outputs.loaders }}
+      game_versions: ${{ steps.meta.outputs.game_versions }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract commit title or manual release inputs
+        id: meta
+        env:
+          CI_EVENT: ${{ github.event_name }}
+          CI_REF: ${{ github.ref }}
+          CI_REPOSITORY: ${{ github.repository }}
+          CI_PUBLISH: ${{ inputs.publish }}
+          CI_VERSION: ${{ inputs.version }}
+          CI_CHANNEL: ${{ inputs.channel }}
+        run: python scripts/ci-release.py metadata
+
+  build:
+    name: Build and verify the universal JAR
+    needs: analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      sha256: ${{ steps.artifact.outputs.sha256 }}
+      jar_name: ${{ steps.artifact.outputs.jar_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+      - name: Set up pinned Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Build universal module only
+        env:
+          BUILD_VERSION: ${{ needs.analyze.outputs.version }}
+        run: gradle --project-dir universal clean build --no-daemon --console=plain "-Pmod_version=$BUILD_VERSION"
+      - name: Verify packaged metadata and prepare exactly one release JAR
+        id: artifact
+        env:
+          BUILD_VERSION: ${{ needs.analyze.outputs.version }}
+        run: python scripts/ci-release.py prepare --version "$BUILD_VERSION"
+      - name: Upload JAR, checksum, manifest and release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: MemorySweep-Universal-${{ needs.analyze.outputs.version }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: ${{ needs.analyze.outputs.publish == 'true' && 90 || 14 }}
+      - name: Upload build reports on failure
+        if: ${{ !cancelled() && failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MemorySweep-Build-Reports
+          path: |
+            build/reports
+            universal/build/reports
+          if-no-files-found: ignore
+
+  curseforge:
+    name: Publish one universal file to CurseForge 784959
+    needs: [analyze, build]
+    if: >-
+      github.repository == 'Tki-sor/MemorySweep' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      (github.ref == 'refs/heads/1.20.1' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+      needs.analyze.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: memorysweep-curseforge-784959
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: MemorySweep-Universal-${{ needs.analyze.outputs.version }}
+          path: artifacts
+      - name: Verify the downloaded build against its build-job checksum
+        env:
+          BUILD_VERSION: ${{ needs.analyze.outputs.version }}
+          EXPECTED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: python scripts/ci-release.py verify --version "$BUILD_VERSION" --sha256 "$EXPECTED_SHA256"
+      - name: Require the project's CurseForge API token
+        env:
+          CF_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: |
+          if [ -z "$CF_TOKEN" ]; then
+            echo "::error::Set CURSEFORGE_TOKEN in this repository's Actions secrets before publishing."
+            exit 1
+          fi
+      - name: Check every requested CurseForge tag before uploading
+        env:
+          CF_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: python scripts/curseforge-preflight.py
+      - name: Publish universal JAR
+        id: publish
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: '784959'
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: artifacts/${{ needs.build.outputs.jar_name }}
+          name: MemorySweep ${{ needs.analyze.outputs.version }} (Universal)
+          version: ${{ needs.analyze.outputs.version }}
+          version-type: ${{ needs.analyze.outputs.channel }}
+          loaders: ${{ needs.analyze.outputs.loaders }}
+          game-versions: ${{ needs.analyze.outputs.game_versions }}
+          changelog-file: artifacts/CHANGELOG.md
+          curseforge-retry-attempts: '1'
+          fail-mode: fail
+      - name: Record uploaded CurseForge file
+        env:
+          FILE_ID: ${{ steps.publish.outputs.curseforge-version }}
+          FILE_URL: ${{ steps.publish.outputs.curseforge-url }}
+        run: |
+          printf '## CurseForge upload\n\nFile ID: %s\n\nURL: %s\n' "$FILE_ID" "$FILE_URL" >> "$GITHUB_STEP_SUMMARY"

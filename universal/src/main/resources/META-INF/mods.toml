@@ -1,0 +1,34 @@
+modLoader = "javafml"
+loaderVersion = "[1,3),[36,)"
+license = "MIT"
+
+[[mods]]
+modId = "memorysweep"
+version = "${version}"
+displayName = "MemorySweep Universal"
+authors = "Tki-sor"
+description = '''A loader-independent JVM memory cleanup mod.'''
+
+[[dependencies.memorysweep]]
+modId = "forge"
+mandatory = false
+versionRange = "[36,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.memorysweep]]
+modId = "neoforge"
+mandatory = false
+versionRange = "[20.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.memorysweep]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "memorysweep-universal.mixins.json"

@@ -1,0 +1,12 @@
+rootProject.name = 'memorysweep-universal'
+
+def inheritedProperties = new Properties()
+file('../gradle.properties').withInputStream { stream -> inheritedProperties.load(stream) }
+
+gradle.beforeProject { project ->
+    ['mod_version', 'maven_group', 'archives_name'].each { propertyName ->
+        if (!project.hasProperty(propertyName)) {
+            project.extensions.extraProperties.set(propertyName, inheritedProperties.getProperty(propertyName))
+        }
+    }
+}

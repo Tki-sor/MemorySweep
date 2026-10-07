@@ -1,0 +1,9 @@
+{
+  "memorysweep.config.title": "MemorySweep Settings",
+  "memorysweep.config.memory_sweep": "Enable memory cleanup",
+  "memorysweep.config.memory_sweep.tooltip": "Enable periodic JVM memory cleanup.",
+  "memorysweep.config.sweep_interval_seconds": "Cleanup interval (seconds)",
+  "memorysweep.config.sweep_interval_seconds.tooltip": "Seconds between cleanups. Zero disables periodic cleanup.",
+  "memorysweep.config.silent": "Silent mode",
+  "memorysweep.config.silent.tooltip": "Suppress cleanup notifications."
+}

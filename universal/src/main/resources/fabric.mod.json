@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "memorysweep",
+  "version": "${version}",
+  "name": "MemorySweep Universal",
+  "description": "A loader-independent JVM memory cleanup mod.",
+  "authors": ["Tki-sor"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.tkisor.memorysweep.universal.fabric.UniversalFabricEntrypoint"]
+  },
+  "mixins": ["memorysweep-universal.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.11",
+    "minecraft": "*",
+    "java": ">=8"
+  }
+}

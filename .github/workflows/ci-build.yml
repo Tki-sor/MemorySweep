@@ -74,7 +74,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21.0.10'
+          java-version: '25.0.2'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -88,7 +88,7 @@ jobs:
       - name: Build universal module only
         env:
           BUILD_VERSION: ${{ needs.analyze.outputs.version }}
-        run: gradle --project-dir universal clean build --no-daemon --console=plain "-Pmod_version=$BUILD_VERSION"
+        run: gradle --project-dir universal clean build --no-daemon --console=plain "-Dorg.gradle.java.home=$JAVA_HOME" "-Pmod_version=$BUILD_VERSION"
       - name: Verify packaged metadata and prepare exactly one release JAR
         id: artifact
         env:

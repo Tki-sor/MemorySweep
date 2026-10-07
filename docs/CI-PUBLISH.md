@@ -28,7 +28,7 @@ The release version is passed as `-Pmod_version=...` to Gradle and validated in 
 
 ## Artifacts and checks
 
-CI fixes **Java 21.0.10 + Gradle 9.1.0** through the Gradle setup action rather than the existing 8.12.1 wrapper. The latter hit a Java 25 dependency-bytecode error in this workspace. The workflow still validates the wrapper JAR, but its build command uses the pinned Gradle executable.
+CI fixes **Java 25.0.2 + Gradle 9.1.0**. The previously stated Java 21 was the local launcher, not the actual compiler: a user-level `org.gradle.java.home` override selected Java 25.0.2 for the Gradle daemon. The existing 8.12.1 wrapper does not support that daemon JVM; CI validates its wrapper JAR but builds with installed Gradle 9.1.0. The build explicitly passes `-Dorg.gradle.java.home=$JAVA_HOME` to prevent hidden overrides. `--release 8` still produces Java 8 class files; build JDK requirements are separate from each Minecraft version's runtime JDK.
 
 It runs `gradle --project-dir universal clean build`, not the root multi-loader `build`. The standalone module reads its version/group/archive defaults from the parent properties file and does not configure the legacy Minecraft/Loom modules or their tracked caches. The archive gate checks:
 
@@ -39,7 +39,7 @@ It runs `gradle --project-dir universal clean build`, not the root multi-loader 
 
 The downloadable `MemorySweep-Universal-<version>` artifact includes the JAR, `SHA256SUMS`, `release.json` and generated release notes. The publishing job downloads that same JAR rather than rebuilding. Its API token is passed only to the token guard, read-only platform-tag preflight and upload action, not the build/PR jobs. All jobs have read-only GitHub contents permission. Publication is serialized and not cancelled mid-upload. The upload action performs one attempt; do not blindly rerun a failed publishing job after an ambiguous response—first inspect CurseForge for a file that may already have been received.
 
-These are build/package checks, **not Minecraft runtime tests**. The first hosted runner's floating Java 21 selected 21.0.12 and changed synthetic lambda/accessor names in five classes. CI therefore pins 21.0.10 and additionally refuses to upload version `3.0.0` unless its full JAR SHA-256 equals the runtime-tested `0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b`. Other changed or version-stamped archives are not automatically covered by the historical runtime matrices. See [native configuration tests and limitations](NATIVE-CONFIG.md).
+These are build/package checks, **not Minecraft runtime tests**. The first hosted runner's floating Java 21 selected 21.0.12 and changed synthetic lambda/accessor names in five classes. Compiler diagnostics confirmed that the local candidate used a Java 25.0.2 daemon despite its Java 21 launcher. CI therefore pins 25.0.2 and additionally refuses to upload version `3.0.0` unless its full JAR SHA-256 equals the runtime-tested `0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b`. Other changed or version-stamped archives are not automatically covered by the historical runtime matrices. See [native configuration tests and limitations](NATIVE-CONFIG.md).
 
 ## CurseForge tags
 
@@ -51,7 +51,7 @@ Successful workflow upload does not mean CurseForge has approved or exposed the 
 
 ## Local verification result
 
-- Java 21 + Gradle 9.1.0 built `3.0.0-ci.abcdef123456` successfully; all three expanded descriptor versions and the manifest matched. The isolated `--project-dir universal` build also produced `3.0.0-standalonecheck` successfully, with all 15 class files and non-version resources byte-identical to the runtime-tested candidate.
+- Gradle 9.1.0 with the actual Java 25.0.2 daemon/compiler built `3.0.0-ci.abcdef123456` successfully; all three expanded descriptor versions and the manifest matched. Although those commands used a Java 21 launcher, the global Gradle JVM override selected 25.0.2. The isolated `--project-dir universal` build also produced `3.0.0-standalonecheck` successfully, with all 15 class files and non-version resources byte-identical to the runtime-tested candidate.
 - Final `prepare` and `verify` passed with exactly one JAR and matching SHA-256. The previously runtime-tested `3.0.0` JAR retained its original `0fe70e00...` fingerprint.
 - `actionlint` 1.7.7 passed workflow syntax and expression checks; its official archive SHA-256 was checked before execution. Optional ShellCheck and Pyflakes integrations were disabled because those tools were not installed.
 - 32 release-trigger, branch, unsafe-version, invalid-JAR and checksum cases passed, plus four simulated CurseForge catalog/tag-map cases. The metadata command's GitHub output integration also passed with a mocked Git process, explicitly because this workspace has no Git history.
@@ -59,7 +59,7 @@ Successful workflow upload does not mean CurseForge has approved or exposed the 
 
 ## Local dry run
 
-With Python 3.11+, Java 21 and Gradle 9.1.0:
+With Python 3.11+, Java 25.0.2 and Gradle 9.1.0:
 
 ```text
 gradle --project-dir universal build --no-daemon -Pmod_version=3.0.1-beta.1

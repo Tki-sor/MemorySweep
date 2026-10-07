@@ -30,7 +30,7 @@ The local final runtime-tested candidate SHA-256 was:
 0fe70e00aa52d9bca273b3411aa7c3bb038e8210837313afd36662c24470b57b
 ```
 
-The isolated local release checkout reproduced that exact full-JAR SHA-256 with Java 21 and Gradle 9.1.0. The hosted CI artifact will still be checked independently after its build.
+The isolated local release checkout reproduced that exact full-JAR SHA-256 with Java 25.0.2 as the actual Gradle daemon/compiler and Gradle 9.1.0. A local Java 21 launcher had been overridden by the user-level Gradle JVM setting. The hosted CI artifact will still be checked independently after its build.
 
 | Check | Cases | Result |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ The [native UI probe](../scripts/java/NativeConfigUiProbe.java) selects MemorySw
 
 ## Reproduction
 
-The universal module has an isolated build entrypoint and needs no legacy Loom initialization:
+The universal module needs JDK 25.0.2 and Gradle 9.1.0 for the tested build and has an isolated entrypoint with no legacy Loom initialization:
 
 ```text
 gradle --project-dir universal clean build -Pmod_version=3.0.0
